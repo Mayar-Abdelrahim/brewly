@@ -1,16 +1,13 @@
-import 'package:material_ui/material_ui.dart';
+import 'package:flutter/material.dart';
 
 class Button extends StatelessWidget {
   final String text;
   final VoidCallback onPressed;
 
-  const Button({Key? key, required this.text, required this.onPressed}) : super(key: key);
+  const Button({super.key, required this.text, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
-      onPressed: onPressed,
-      child: Text(text),
-    );
+    return ElevatedButton(onPressed: onPressed, child: Text(text));
   }
 }
