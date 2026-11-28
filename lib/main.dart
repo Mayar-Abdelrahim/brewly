@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'screens/welcome_screen.dart';
 
@@ -14,6 +15,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Brewly',
       debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        textTheme: GoogleFonts.poppinsTextTheme(),
+        useMaterial3: true,
+      ),
       home: const WelcomeScreen(),
     );
   }

@@ -1,3 +1,4 @@
+import 'package:brewly/screens/cart.dart';
 import 'package:brewly/screens/favourites_screen.dart';
 import 'package:brewly/widgets/coffee_product_card.dart';
 import 'package:brewly/widgets/home_bottom_bar.dart';
@@ -123,7 +124,9 @@ class HomeScreenState extends State<HomeScreen> {
           setState(() => bottomIndex = index);
         },
       ),
-      body: bottomIndex == 1
+      body: bottomIndex == 2
+          ? const CartScreen()
+          : bottomIndex == 1
           ? FavoritesScreen(
               favorites: coffeeProducts,
               onFavoriteToggle: (index) {
