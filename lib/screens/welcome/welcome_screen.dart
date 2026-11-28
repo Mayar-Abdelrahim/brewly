@@ -1,7 +1,7 @@
-import 'package:brewly/screens/home_screen.dart';
-import 'package:brewly/widgets/getting_started_button.dart';
+import 'package:brewly/screens/home/home_screen.dart';
+import 'package:brewly/screens/welcome/getting_started_button.dart';
 import 'package:flutter/material.dart';
-import '../widgets/brewly_brand_badge.dart';
+import 'brewly_brand_badge.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -14,10 +14,7 @@ class WelcomeScreen extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           // background image
-          Image.asset(
-            'assets/images/welcome.png',
-            fit: BoxFit.cover,
-          ),
+          Image.asset('assets/images/welcome.png', fit: BoxFit.cover),
 
           Container(
             decoration: const BoxDecoration(
@@ -34,7 +31,6 @@ class WelcomeScreen extends StatelessWidget {
               ),
             ),
           ),
-
 
           SafeArea(
             child: Padding(
@@ -65,7 +61,12 @@ class WelcomeScreen extends StatelessWidget {
                   const SizedBox(height: 28),
                   GetStartedButton(
                     onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const HomeScreen(),
+                        ),
+                      );
                     },
                   ),
                   const SizedBox(height: 10),

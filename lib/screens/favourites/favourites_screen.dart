@@ -1,3 +1,5 @@
+import 'package:brewly/core/app_colors.dart';
+import 'package:brewly/screens/product_details_screen/product_details_screen.dart';
 import 'package:brewly/widgets/coffee_product_card.dart';
 import 'package:flutter/material.dart';
 
@@ -5,12 +7,14 @@ class FavoritesScreen extends StatelessWidget {
   final List<Map<String, dynamic>> favorites;
   final ValueChanged<int> onFavoriteToggle;
   final VoidCallback onExploreMenu;
+  final ValueChanged<Map<String, dynamic>>? onAddToCart;
 
   const FavoritesScreen({
     super.key,
     required this.favorites,
     required this.onFavoriteToggle,
     required this.onExploreMenu,
+    this.onAddToCart,
   });
 
   @override
@@ -45,7 +49,7 @@ class FavoritesScreen extends StatelessWidget {
                   Text(
                     'Favorites',
                     style: TextStyle(
-                      color: Color(0xFF1E1815),
+                      color: AppColors.dark,
                       fontSize: 22,
                       fontWeight: FontWeight.w700,
                     ),
@@ -66,7 +70,7 @@ class FavoritesScreen extends StatelessWidget {
                     width: 120,
                     height: 120,
                     decoration: const BoxDecoration(
-                      color: Color(0xFFF3E6D8),
+                      color: AppColors.chip,
                       shape: BoxShape.circle,
                     ),
                     child: const Center(
@@ -77,7 +81,7 @@ class FavoritesScreen extends StatelessWidget {
                   const Text(
                     'No favorites yet',
                     style: TextStyle(
-                      color: Color(0xFF1E1815),
+                      color: AppColors.dark,
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
                     ),
@@ -86,7 +90,10 @@ class FavoritesScreen extends StatelessWidget {
                   const Text(
                     'Tap the heart on any drink to save\nit here',
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Color(0xFF8C7E74), fontSize: 14),
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 14,
+                    ),
                   ),
                   const SizedBox(height: 28),
                   SizedBox(
@@ -95,8 +102,8 @@ class FavoritesScreen extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: onExploreMenu,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF5C3D28),
-                        foregroundColor: Colors.white,
+                        backgroundColor: AppColors.primaryDark,
+                        foregroundColor: AppColors.surface,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(24),
                         ),
@@ -134,7 +141,7 @@ class FavoritesScreen extends StatelessWidget {
               Text(
                 'Favorites',
                 style: TextStyle(
-                  color: Color(0xFF1E1815),
+                  color: AppColors.dark,
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
                 ),
@@ -167,7 +174,20 @@ class FavoritesScreen extends StatelessWidget {
                 onFavoriteTap: () {
                   onFavoriteToggle(originalIndex);
                 },
-                onAddTap: () {},
+                onAddTap: () {
+                  onAddToCart?.call(item);
+                },
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ProductDetailsScreen(
+                        product: item,
+                        onAddToCart: onAddToCart,
+                      ),
+                    ),
+                  );
+                },
               );
             },
           ),

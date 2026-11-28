@@ -1,6 +1,5 @@
+import 'package:brewly/core/app_colors.dart';
 import 'package:flutter/material.dart';
-
-import 'order_success_dialog.dart';
 
 class _Extra {
   final String name;
@@ -10,19 +9,26 @@ class _Extra {
 }
 
 class ProductDetailsScreen extends StatefulWidget {
-  const ProductDetailsScreen({super.key});
+  final Map<String, dynamic> product;
+  final ValueChanged<Map<String, dynamic>>? onAddToCart;
+
+  const ProductDetailsScreen({
+    super.key,
+    required this.product,
+    this.onAddToCart,
+  });
 
   @override
   State<ProductDetailsScreen> createState() => _ProductDetailsScreenState();
 }
 
 class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
-  static const Color _brown = Color(0xFF6F4E37);
-  static const Color _dark = Color(0xFF3E2723);
-  static const Color _muted = Color(0xFF8D7B6F);
-  static const Color _border = Color(0xFFE8DCCF);
+  static const Color _brown = AppColors.primary;
+  static const Color _dark = AppColors.darkText;
+  static const Color _muted = AppColors.textSecondary;
+  static const Color _border = AppColors.border;
 
-  static const int _basePrice = 65;
+  late int _basePrice;
   static const List<String> _sizes = ['S', 'M', 'L'];
   static const List<_Extra> _extras = [
     _Extra('Extra Sugar', 0),
@@ -31,10 +37,21 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     _Extra('Oat Milk', 12),
   ];
 
-  String _size = 'M';
-  final Set<int> _selectedExtras = {2};
-  int _quantity = 1;
-  bool _favorite = false;
+  String? _size;
+  final Set<int> _selectedExtras = {};
+  final _quantity = 1;
+  late bool _favorite;
+
+  @override
+  void initState() {
+    super.initState();
+    final priceStr =
+        widget.product['priceText'] ?? widget.product['price'] ?? '65';
+    _basePrice =
+        int.tryParse(priceStr.toString().replaceAll(RegExp(r'[^0-9]'), '')) ??
+        65;
+    _favorite = (widget.product['isFavorite'] as bool?) ?? false;
+  }
 
   int get _extrasTotal =>
       _selectedExtras.fold<int>(0, (sum, i) => sum + _extras[i].price);
@@ -52,11 +69,46 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   }
 
   void _addToCart() {
-    OrderSuccessDialog.show(context, total: _total);
+    final title = widget.product['title'] ?? 'Coffee';
+    final extrasList = _selectedExtras.map((i) => _extras[i].name).toList();
+    final extrasText = extrasList.isEmpty ? '' : ' · ${extrasList.join(', ')}';
+    final chosenSize = _size ?? 'S';
+    final sizeText = 'Size $chosenSize';
+    final customSubtitle = extrasList.isEmpty
+        ? sizeText
+        : '$sizeText$extrasText';
+
+    if (widget.onAddToCart != null) {
+      widget.onAddToCart!({
+        'title': title,
+        'subtitle': customSubtitle,
+        'priceText': '$_total EGP',
+        'imagePath': widget.product['imagePath'],
+        'quantity': _quantity,
+      });
+    }
+
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    if (messenger != null) {
+      messenger.hideCurrentSnackBar();
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('$title added to cart!'),
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+
+    Navigator.of(context).maybePop();
   }
 
   @override
   Widget build(BuildContext context) {
+    final title = widget.product['title'] ?? 'Coffee';
+    final subtitle = widget.product['subtitle'] ?? 'Fresh & Delicious Brew';
+    final imagePath = widget.product['imagePath'] as String?;
+
     return Scaffold(
       backgroundColor: const Color(0xFFFFF8F0),
       body: Column(
@@ -66,18 +118,18 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildHeader(context),
+                  _buildHeader(context, imagePath),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildTitleRow(),
+                        _buildTitleRow(title),
                         const SizedBox(height: 10),
-                        const Text(
-                          'Rich espresso with steamed milk and a drizzle of '
-                          'golden caramel syrup.',
-                          style: TextStyle(
+                        Text(
+                          widget.product['description'] ??
+                              '$subtitle — freshly prepared with premium roasted beans and rich flavors.',
+                          style: const TextStyle(
                             fontSize: 14,
                             height: 1.5,
                             color: _muted,
@@ -104,7 +156,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, String? imagePath) {
     return Container(
       height: 280,
       width: double.infinity,
@@ -124,19 +176,29 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         child: Stack(
           children: [
             Center(
-              child: Container(
-                width: 170,
-                height: 170,
-                decoration: const BoxDecoration(
-                  color: Color(0x26FFFFFF),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.local_cafe,
-                  size: 96,
-                  color: Color(0xFFFFF1DF),
-                ),
-              ),
+              child: imagePath != null
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(24),
+                      child: Image.asset(
+                        imagePath,
+                        width: 170,
+                        height: 170,
+                        fit: BoxFit.cover,
+                      ),
+                    )
+                  : Container(
+                      width: 170,
+                      height: 170,
+                      decoration: const BoxDecoration(
+                        color: Color(0x26FFFFFF),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.local_cafe,
+                        size: 96,
+                        color: Color(0xFFFFF1DF),
+                      ),
+                    ),
             ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -150,7 +212,12 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   _circleButton(
                     icon: _favorite ? Icons.favorite : Icons.favorite_border,
                     iconColor: _favorite ? const Color(0xFFE53935) : _dark,
-                    onTap: () => setState(() => _favorite = !_favorite),
+                    onTap: () {
+                      setState(() {
+                        _favorite = !_favorite;
+                        widget.product['isFavorite'] = _favorite;
+                      });
+                    },
                   ),
                 ],
               ),
@@ -180,15 +247,15 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
     );
   }
 
-  Widget _buildTitleRow() {
+  Widget _buildTitleRow(String title) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Expanded(
+        Expanded(
           child: Text(
-            'Caramel Latte',
-            style: TextStyle(
+            title,
+            style: const TextStyle(
               fontSize: 26,
               fontWeight: FontWeight.w800,
               color: _dark,
@@ -256,41 +323,39 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
 
   Widget _buildExtras() {
     return Column(
-      children: List<Widget>.generate(_extras.length, (i) {
+      children: List.generate(_extras.length, (i) {
         final extra = _extras[i];
-        final selected = _selectedExtras.contains(i);
+        final checked = _selectedExtras.contains(i);
         return Padding(
           padding: const EdgeInsets.only(bottom: 10),
           child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
             onTap: () => _toggleExtra(i),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
-                color: selected ? const Color(0xFFF6EADD) : Colors.white,
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: selected ? _brown : _border,
-                  width: 1.5,
+                  color: checked ? _brown : _border,
+                  width: checked ? 1.8 : 1.2,
                 ),
               ),
               child: Row(
                 children: [
                   AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    width: 24,
-                    height: 24,
+                    duration: const Duration(milliseconds: 160),
+                    width: 22,
+                    height: 22,
                     decoration: BoxDecoration(
-                      color: selected ? _brown : Colors.transparent,
-                      borderRadius: BorderRadius.circular(7),
+                      color: checked ? _brown : Colors.transparent,
+                      borderRadius: BorderRadius.circular(6),
                       border: Border.all(
-                        color: selected ? _brown : _border,
-                        width: 1.5,
+                        color: checked ? _brown : const Color(0xFFBCAAA4),
+                        width: 1.8,
                       ),
                     ),
-                    child: selected
-                        ? const Icon(Icons.check, size: 16, color: Colors.white)
+                    child: checked
+                        ? const Icon(Icons.check, size: 15, color: Colors.white)
                         : null,
                   ),
                   const SizedBox(width: 14),
@@ -305,11 +370,11 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                     ),
                   ),
                   Text(
-                    '+${extra.price} EGP',
-                    style: const TextStyle(
+                    extra.price == 0 ? 'Free' : '+${extra.price} EGP',
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: _brown,
+                      color: checked ? _brown : _muted,
                     ),
                   ),
                 ],
@@ -323,7 +388,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
 
   Widget _buildBottomBar() {
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.only(
@@ -332,7 +397,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: Color(0x1A000000),
+            color: Color(0x14000000),
             blurRadius: 16,
             offset: Offset(0, -4),
           ),
@@ -342,8 +407,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         top: false,
         child: Row(
           children: [
-            _buildStepper(),
-            const SizedBox(width: 14),
             Expanded(
               child: SizedBox(
                 height: 54,
@@ -369,44 +432,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildStepper() {
-    return Container(
-      height: 54,
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFF8F0),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: _border, width: 1.5),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          IconButton(
-            onPressed: _quantity > 1 ? () => setState(() => _quantity--) : null,
-            icon: const Icon(Icons.remove, size: 20),
-            color: _dark,
-          ),
-          SizedBox(
-            width: 24,
-            child: Text(
-              '$_quantity',
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w800,
-                color: _dark,
-              ),
-            ),
-          ),
-          IconButton(
-            onPressed: () => setState(() => _quantity++),
-            icon: const Icon(Icons.add, size: 20),
-            color: _dark,
-          ),
-        ],
       ),
     );
   }

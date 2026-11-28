@@ -1,24 +1,36 @@
+import 'package:brewly/core/app_colors.dart';
+import 'package:brewly/screens/home/home_screen.dart';
 import 'package:flutter/material.dart';
-
-import 'home.dart';
 
 class OrderSuccessDialog extends StatelessWidget {
   final int total;
+  final String? message;
+  final VoidCallback? onDone;
 
-  const OrderSuccessDialog({super.key, required this.total});
+  const OrderSuccessDialog({
+    super.key,
+    required this.total,
+    this.message,
+    this.onDone,
+  });
 
-  static Future<void> show(BuildContext context, {required int total}) {
+  static Future<void> show(
+    BuildContext context, {
+    required int total,
+    String? message,
+    VoidCallback? onDone,
+  }) {
     return showDialog<void>(
       context: context,
-      barrierDismissible: false,
-      builder: (_) => OrderSuccessDialog(total: total),
+      builder: (_) =>
+          OrderSuccessDialog(total: total, message: message, onDone: onDone),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    const brown = Color(0xFF6F4E37);
-    const dark = Color(0xFF3E2723);
+    const brown = AppColors.primary;
+    const dark = AppColors.darkText;
 
     return Dialog(
       backgroundColor: Colors.white,
@@ -33,7 +45,7 @@ class OrderSuccessDialog extends StatelessWidget {
               width: 84,
               height: 84,
               decoration: const BoxDecoration(
-                color: Color(0xFFE6F4EA),
+                color: AppColors.successLight,
                 shape: BoxShape.circle,
               ),
               child: Center(
@@ -41,7 +53,7 @@ class OrderSuccessDialog extends StatelessWidget {
                   width: 56,
                   height: 56,
                   decoration: const BoxDecoration(
-                    color: Color(0xFF2E9E5B),
+                    color: AppColors.success,
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.check, color: Colors.white, size: 34),
@@ -58,17 +70,20 @@ class OrderSuccessDialog extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Your Caramel Latte is being prepared.',
+            Text(
+              message ?? 'Your order is being freshly prepared.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14, color: Color(0xFF8D7B6F)),
+              style: const TextStyle(
+                fontSize: 14,
+                color: AppColors.textSecondary,
+              ),
             ),
             const SizedBox(height: 18),
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: BoxDecoration(
-                color: const Color(0xFFFFF8F0),
+                color: AppColors.backgroundLight,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Row(
@@ -99,10 +114,17 @@ class OrderSuccessDialog extends StatelessWidget {
               height: 52,
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute<void>(builder: (_) => const Home()),
-                    (route) => false,
-                  );
+                  Navigator.of(context).pop();
+                  if (onDone != null) {
+                    onDone!();
+                  } else {
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const HomeScreen(),
+                      ),
+                      (route) => false,
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: brown,
