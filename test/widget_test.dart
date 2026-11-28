@@ -1,26 +1,19 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:brewly/main.dart';
 
 void main() {
-  testWidgets('Product details total updates and order dialog shows', (
+  testWidgets('Onboarding shows and Get Started opens home', (
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(const MyApp());
 
-    expect(find.text('Caramel Latte'), findsOneWidget);
-    expect(find.text('Add to Cart · 80 EGP'), findsOneWidget);
+    expect(find.text('Fresh Coffee,\nMade for You'), findsOneWidget);
+    expect(find.text('Get Started'), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-    expect(find.text('Add to Cart · 160 EGP'), findsOneWidget);
-
-    await tester.tap(find.text('Add to Cart · 160 EGP'));
+    await tester.tap(find.text('Get Started'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Order Placed!'), findsOneWidget);
-    expect(find.text('160 EGP'), findsOneWidget);
-    expect(find.text('Back to Home'), findsOneWidget);
+    expect(find.text('Welcome to Brewly!'), findsOneWidget);
   });
 }
